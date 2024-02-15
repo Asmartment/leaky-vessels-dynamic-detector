@@ -26,6 +26,7 @@ import (
 	"ebpf-detector/internal/symlink"
 	"ebpf-detector/internal/unlink"
 	"os"
+    "fmt"
 )
 
 func main() {
@@ -59,5 +60,25 @@ func detectBuildTimeVulnerabilities() {
 }
 
 func exploitationReporter(cve, name, blogUrl string, forensics map[string]any) {
-	logger.Info("Leaky Vessels vulnerability detected", "CVE", cve, "Name", name, "Blogpost URL", blogUrl, "Forensics", forensics)
+    message := fmt.Sprint("Leaky Vessels vulnerability detected", "CVE", cve, "Name", name, "Blogpost URL", blogUrl, "Forensics", forensics)   
+    logger.Info(message)
+    sendSlackMessage(message)
+}
+
+func sendSlackMessage(message string) {
+    if WEBHOOK_URL, ok := os.LookupEnv("WEBHOOK_URL"); ok {
+        sc := SlackClient{
+            WebHookUrl: WEBHOOK_URL,
+            UserName:   "leakyvessel-detector",
+            Channel:    "leaky-vessel-detector-notification",
+        }
+        sr := SimpleSlackRequest{
+            Text:      message,
+            IconEmoji: ":this-is-fine-fire:",
+        }
+        err := sc.SendSlackNotification(sr)
+        if err != nil {
+            logger.Error(err, "Unable to send to slack!!")
+        }
+    }
 }
