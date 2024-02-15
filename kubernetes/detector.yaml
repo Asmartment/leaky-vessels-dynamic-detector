@@ -44,6 +44,8 @@ spec:
               value: /boot.host
             - name: RUNTIME_MODE
               value: "true"
+            - name: WEBHOOK_URL
+              value: Nil
       hostPID: true
       volumes:
         - name: boot-host
